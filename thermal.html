@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DEEMI Thermal Review</title>
+<style>
+:root{
+  --ground:#f4f6f5; --panel:#ffffff; --line:#d5dedd;
+  --ink:#10191c; --ink2:#42535a; --mut:#6d8088;
+  --person:#c4551f; --accent:#0f7d8a;
+  --stage:#05090b;
+  --ui:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ground:#0d1418; --panel:#141e23; --line:#22323a;
+  --ink:#e7eeed; --ink2:#b3c2c5; --mut:#7e9199;
+  --person:#f0834a; --accent:#3fc0cd;
+}}
+:root[data-theme="dark"]{
+  --ground:#0d1418; --panel:#141e23; --line:#22323a;
+  --ink:#e7eeed; --ink2:#b3c2c5; --mut:#7e9199;
+  --person:#f0834a; --accent:#3fc0cd;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--ground);color:var(--ink);font:15px/1.45 var(--ui);
+  display:flex;flex-direction:column;overflow:hidden}
+header{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;
+  padding:18px 24px 12px;flex-wrap:wrap}
+.htext{display:flex;flex-direction:column;gap:5px}
+.eyebrow{font:600 11px/1 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--accent)}
+h1{margin:0;font-size:26px;line-height:1.15;letter-spacing:-.022em;font-weight:680}
+.byline{margin:0;color:var(--mut);font-size:13.5px}
+.seg{display:inline-flex;background:var(--line);border-radius:9px;padding:2px}
+.seg a{font-size:13px;padding:5px 13px;border-radius:7px;color:var(--ink2);text-decoration:none;
+  white-space:nowrap}
+.seg a.on{background:var(--panel);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.note{padding:0 24px 10px;color:var(--mut);font-size:13px}
+.note b{color:var(--ink2);font-weight:550}
+.stage{flex:1;min-height:0;display:flex;gap:10px;padding:0 24px;position:relative}
+.pane{flex:1;position:relative;overflow:hidden;background:var(--stage);border-radius:12px;
+  touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
+.pane.rgb{flex:1.25}
+.pane.drag{cursor:grabbing}
+.stage.mark .pane{cursor:crosshair}
+.pane img{position:absolute;left:0;top:0;transform-origin:0 0;max-width:none;pointer-events:none}
+.pane svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}
+.plabel{position:absolute;left:10px;top:10px;z-index:2;font-size:12px;color:rgba(255,255,255,.88);
+  background:rgba(20,20,22,.55);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  padding:3px 9px;border-radius:7px;pointer-events:none}
+.plabel span{color:rgba(235,235,245,.55);font-family:var(--mono);font-size:11px;margin-left:6px}
+.geopill{position:absolute;z-index:5;display:none;align-items:baseline;gap:8px;
+  font:500 13px var(--ui);color:#fff;background:rgba(28,28,30,.72);
+  backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);
+  padding:6px 11px;border-radius:10px;white-space:nowrap;cursor:pointer;
+  box-shadow:0 4px 18px rgba(0,0,0,.35);transform:translate(-50%,-100%) translateY(-10px)}
+.geopill.on{display:inline-flex}
+.geopill .sub{color:rgba(235,235,245,.6);font-weight:400}
+.tools{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);z-index:6;display:flex;gap:2px;
+  background:rgba(28,28,30,.72);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  padding:3px;border-radius:12px}
+.tools button{display:flex;align-items:center;gap:6px;border:0;border-radius:9px;background:none;
+  color:rgba(255,255,255,.75);font:500 13px var(--ui);padding:6px 12px;cursor:pointer}
+.tools button.on{background:rgba(255,255,255,.16);color:#fff}
+.tools svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.8;
+  stroke-linecap:round;stroke-linejoin:round}
+.strip{display:flex;gap:6px;overflow-x:auto;padding:12px 24px 16px;scrollbar-width:thin}
+.strip button{flex:none;position:relative;border:0;padding:0;border-radius:7px;overflow:hidden;
+  cursor:pointer;opacity:.55;outline:2px solid transparent;outline-offset:-2px;background:none}
+.strip button.on{opacity:1;outline-color:var(--accent)}
+.strip button:hover{opacity:.9}
+.strip img{display:block;width:84px;height:63px;object-fit:cover}
+.strip i{position:absolute;right:5px;top:5px;width:7px;height:7px;border-radius:50%;
+  background:var(--person);box-shadow:0 0 0 1.5px rgba(0,0,0,.4)}
+.legend{display:flex;gap:14px;align-items:center;font-size:12.5px;color:var(--mut)}
+.legend s{display:inline-block;width:14px;height:10px;border:1.5px solid var(--person);
+  border-radius:2px;vertical-align:-1px;margin-right:5px;text-decoration:none}
+.legend s.u{border-color:var(--ink2)}
+.legend s.d{border-style:dashed}
+.toast{position:fixed;left:50%;top:18px;transform:translateX(-50%);z-index:9;font-size:13px;
+  background:rgba(28,28,30,.85);color:#fff;padding:7px 14px;border-radius:10px;
+  opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.on{opacity:1}
+@media (max-width:760px){
+  body{overflow:auto;height:auto}
+  header,.note{padding-left:16px;padding-right:16px}
+  .stage{flex-direction:column;padding:0 16px;flex:none}
+  .pane,.pane.rgb{flex:none;height:44vh}
+  .strip{padding-left:16px;padding-right:16px}
+  .legend{display:none}
+}
+</style></head><body>
+<header>
+  <div class="htext">
+    <span class="eyebrow">Visual Prioritization</span>
+    <h1>DEEMI SAR Review</h1>
+    <p class="byline">by Draken</p>
+  </div>
+  <div class="legend">
+    <span><s></s>model</span><span><s class="u"></s>yours</span><span><s class="d"></s>projected</span>
+  </div>
+  <nav class="seg" aria-label="view">
+    <a href="demo.html">RGB</a><a class="on" href="thermal.html" aria-current="page">RGB + Thermal</a>
+  </nav>
+</header>
+<p class="note">Demo &middot; <b>field flight, 8 Oct 2026</b>, Mavic 2 Enterprise Advanced.
+  Drag a box on either image; it appears on the other. Dots mark frames where thermal finds someone hidden under trees.</p>
+
+<div class="stage" id="stage">
+  <div class="pane rgb" id="prgb"><img id="irgb" alt="RGB photo"><svg id="srgb"></svg>
+    <div class="plabel">RGB<span id="lrgb"></span></div></div>
+  <div class="pane th" id="pth"><img id="ith" alt="thermal photo"><svg id="sth"></svg>
+    <div class="plabel">Thermal<span id="lth"></span></div></div>
+  <div class="geopill" id="pill"></div>
+  <div class="tools">
+    <button id="tmove" class="on" title="Move (V)"><svg viewBox="0 0 24 24"><path d="M12 3v18M3 12h18M12 3l-3 3M12 3l3 3M12 21l-3-3M12 21l3-3M3 12l3-3M3 12l3 3M21 12l-3-3M21 12l-3 3"/></svg>Move</button>
+    <button id="tmark" title="Mark (M) — or hold Shift and drag"><svg viewBox="0 0 24 24"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/></svg>Mark</button>
+    <button id="tfit" title="Fit both (F)"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>Fit</button>
+  </div>
+</div>
+<div class="strip" id="strip"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const DATA = [{"n":"p00","rgb":"DJI_0768_W.JPG","th":"DJI_0769_T.JPG","W":8000,"H":6000,"A":[[8.140228271484375,-0.008744251914322376,1353.501220703125],[-0.03264838829636574,8.076664924621582,1044.639892578125]],"zoom":1.0,"pose":{"lat":44.8972061,"lon":-68.7867429,"alt":45.16,"yaw":-63.3,"model":"MAVIC2-ENTERPRISE-ADVANCED","pitch":-46.2,"roll":0.0,"W":8000,"H":6000,"fx":5333.333333333333,"cx":4000.0,"cy":3000.0,"zoom":1.0},"boxes":[[0.757,5721,1782,63,124,"both"],[0.588,4000,152,41,72,"rgb"],[0.484,3480,2400,40,99,"rgb"],[0.475,3942,2596,44,78,"rgb"]],"hit":false},{"n":"p01","rgb":"DJI_0786_W.JPG","th":"DJI_0787_T.JPG","W":8000,"H":6000,"A":[[8.292840957641602,-0.2512749433517456,1372.9566650390625],[0.0915725901722908,8.546638488769531,932.117431640625]],"zoom":1.0,"pose":{"lat":44.8980492,"lon":-68.7871869,"alt":45.13,"yaw":-157.1,"model":"MAVIC2-ENTERPRISE-ADVANCED","pitch":-49.8,"roll":0.0,"W":8000,"H":6000,"fx":5333.333333333333,"cx":4000.0,"cy":3000.0,"zoom":1.0},"boxes":[[0.651,6211,2797,87,60,"rgb"],[0.651,3521,2579,67,133,"both"],[0.588,3412,2645,50,98,"both"]],"hit":false},{"n":"p02","rgb":"DJI_0805_W.JPG","th":"DJI_0806_T.JPG","W":8000,"H":6000,"A":[[8.04696273803711,-0.42342856526374817,1286.5997314453125],[0.035737987607717514,8.21867847442627,1020.6604614257812]],"zoom":1.0,"pose":{"lat":44.8977493,"lon":-68.7870489,"alt":12.95,"yaw":-151.7,"model":"MAVIC2-ENTERPRISE-ADVANCED","pitch":-44.2,"roll":0.0,"W":8000,"H":6000,"fx":5333.333333333333,"cx":4000.0,"cy":3000.0,"zoom":1.0},"boxes":[[0.626,3092,552,139,303,"rgb"],[0.571,3243,1879,280,498,"thermal"]],"hit":false},{"n":"p03","rgb":"DJI_0823_W.JPG","th":"DJI_0824_T.JPG","W":8000,"H":6000,"A":[[8.34355354309082,0.0,1304.0],[0.0,8.34355354309082,1016.0]],"zoom":1.0,"pose":{"lat":44.8978891,"lon":-68.7873948,"alt":12.89,"yaw":-171.7,"model":"MAVIC2-ENTERPRISE-ADVANCED","pitch":-39.8,"roll":0.0,"W":8000,"H":6000,"fx":5333.333333333333,"cx":4000.0,"cy":3000.0,"zoom":1.0},"boxes":[[0.757,186,411,153,229,"rgb"],[0.659,458,506,132,134,"rgb"],[0.639,1120,960,106,245,"rgb"],[0.5,506,5782,28,63,"rgb"]],"hit":false},{"n":"p04","rgb":"DJI_0841_W.JPG","th":"DJI_0842_T.JPG","W":8000,"H":6000,"A":[[8.122243881225586,-0.0454062893986702,1374.6492919921875],[-0.10413287580013275,7.832131385803223,1127.027099609375]],"zoom":1.0,"pose":{"lat":44.8979987,"lon":-68.7872084,"alt":13.2,"yaw":177.1,"model":"MAVIC2-ENTERPRISE-ADVANCED","pitch":-15.9,"roll":0.0,"W":8000,"H":6000,"fx":5333.333333333333,"cx":4000.0,"cy":3000.0,"zoom":1.0},"boxes":[[0.935,3938,2484,62,192,"both"],[0.866,3679,2609,78,188,"both"],[0.852,4041,2593,72,187,"both"],[0.719,6905,3479,95,39,"rgb"],[0.516,6373,4320,47,85,"rgb"]],"hit":false},{"n":"p05","rgb":"DJI_0859_W.JPG","th":"DJI_0860_T.JPG","W":8000,"H":6000,"A":[[8.062896728515625,0.07711857557296753,1383.9671630859375],[-0.07478786259889603,7.897168159484863,1091.109619140625]],"zoom":1.0,"pose":{"lat":44.8979025,"lon":-68.7867421,"alt":13.22,"yaw":-159.8,"model":"MAVIC2-ENTERPRISE-ADVANCED","pitch":-15.9,"roll":0.0,"W":8000,"H":6000,"fx":5333.333333333333,"cx":4000.0,"cy":3000.0,"zoom":1.0},"boxes":[[0.944,5878,2552,79,198,"both"],[0.866,5191,2314,69,192,"rgb"],[0.694,6034,4401,43,56,"rgb"]],"hit":false},{"n":"p06","rgb":"DJI_0877_W.JPG","th":"DJI_0878_T.JPG","W":8000,"H":6000,"A":[[9.65232271194458,-0.01756432522088289,866.0143481445314],[0.0031633647903800007,9.613765897750854,660.2847430419924]],"zoom":1.18,"pose":{"lat":44.8980066,"lon":-68.787381,"alt":13.14,"yaw":162.6,"model":"MAVIC2-ENTERPRISE-ADVANCED","pitch":-9.1,"roll":0.0,"W":8000,"H":6000,"fx":6293.333333333333,"cx":4000.0,"cy":3000.0,"zoom":1.18},"boxes":[[0.846,3519,3124,78,193,"both"],[0.769,3371,3183,84,195,"rgb"],[0.684,3319,3113,81,198,"rgb"],[0.564,7392,5393,154,47,"rgb"]],"hit":false},{"n":"p07","rgb":"DJI_0895_W.JPG","th":"DJI_0896_T.JPG","W":8000,"H":6000,"A":[[8.136419296264648,-0.040285609662532806,1369.8623046875],[0.05504706874489784,8.152534484863281,998.9747924804688]],"zoom":1.0,"pose":{"lat":44.897716,"lon":-68.7873937,"alt":43.86,"yaw":-177.3,"model":"MAVIC2-ENTERPRISE-ADVANCED","pitch":-78.2,"roll":0.0,"W":8000,"H":6000,"fx":5333.333333333333,"cx":4000.0,"cy":3000.0,"zoom":1.0},"boxes":[],"hit":false},{"n":"p08","rgb":"DJI_0913_W.JPG","th":"DJI_0914_T.JPG","W":8000,"H":6000,"A":[[8.097762107849121,-0.36215531826019287,1299.28466796875],[0.19176392257213593,8.083083152770996,957.3255615234375]],"zoom":1.0,"pose":{"lat":44.8974941,"lon":-68.7874078,"alt":44.06,"yaw":137.0,"model":"MAVIC2-ENTERPRISE-ADVANCED","pitch":-78.2,"roll":0.0,"W":8000,"H":6000,"fx":5333.333333333333,"cx":4000.0,"cy":3000.0,"zoom":1.0},"boxes":[[0.772,2201,2495,134,65,"rgb"],[0.595,2089,2520,149,99,"rgb"]],"hit":false},{"n":"p09","rgb":"DJI_0931_W.JPG","th":"DJI_0932_T.JPG","W":8000,"H":6000,"A":[[8.227543830871582,-0.07044227421283722,1348.3272705078125],[0.0256180502474308,8.145851135253906,1021.077880859375]],"zoom":1.0,"pose":{"lat":44.8970852,"lon":-68.7873286,"alt":44.28,"yaw":-25.0,"model":"MAVIC2-ENTERPRISE-ADVANCED","pitch":-38.4,"roll":0.0,"W":8000,"H":6000,"fx":5333.333333333333,"cx":4000.0,"cy":3000.0,"zoom":1.0},"boxes":[[0.842,6434,807,122,138,"rgb"],[0.824,6042,4397,95,181,"both"],[0.675,4072,2864,52,126,"rgb"],[0.643,2791,2962,76,77,"both"]],"hit":false},{"n":"p10","rgb":"DJI_0949_W.JPG","th":"DJI_0950_T.JPG","W":8000,"H":6000,"A":[[8.209586143493652,-0.029929006472229958,1360.63916015625],[0.027867669239640236,8.09616470336914,1019.8954467773438]],"zoom":1.0,"pose":{"lat":44.8971078,"lon":-68.7881133,"alt":44.51,"yaw":34.9,"model":"MAVIC2-ENTERPRISE-ADVANCED","pitch":-27.9,"roll":0.0,"W":8000,"H":6000,"fx":5333.333333333333,"cx":4000.0,"cy":3000.0,"zoom":1.0},"boxes":[[0.808,2625,1744,160,81,"both"],[0.791,6257,3714,60,135,"rgb"],[0.525,5978,1311,36,44,"rgb"],[0.504,0,8,34,105,"rgb"]],"hit":false},{"n":"p11","rgb":"DJI_0967_W.JPG","th":"DJI_0968_T.JPG","W":8000,"H":6000,"A":[[9.815921401977539,-0.017862025648355484,812.8959472656252],[0.003216981142759323,9.776711082458496,620.6285522460938]],"zoom":1.2,"pose":{"lat":44.897313,"lon":-68.787259,"alt":46.99,"yaw":-32.7,"model":"MAVIC2-ENTERPRISE-ADVANCED","pitch":-48.1,"roll":0.0,"W":8000,"H":6000,"fx":6399.999999999999,"cx":4000.0,"cy":3000.0,"zoom":1.2},"boxes":[[0.478,282,2238,55,68,"rgb"]],"hit":false},{"n":"p12","rgb":"DJI_0985_W.JPG","th":"DJI_0986_T.JPG","W":8000,"H":6000,"A":[[8.425332536697388,-0.015331572014838457,1264.402354736328],[0.002761242147535086,8.391677012443543,957.7061740112305]],"zoom":1.03,"pose":{"lat":44.8969798,"lon":-68.787128,"alt":46.57,"yaw":-24.8,"model":"MAVIC2-ENTERPRISE-ADVANCED","pitch":-37.9,"roll":0.0,"W":8000,"H":6000,"fx":5493.333333333333,"cx":4000.0,"cy":3000.0,"zoom":1.03},"boxes":[[0.795,4597,2834,68,125,"rgb"],[0.469,3679,3568,67,105,"both"],[0.468,2737,4368,103,72,"rgb"]],"hit":false},{"n":"p13","rgb":"DJI_0022_W.JPG","th":"DJI_0023_T.JPG","W":8000,"H":6000,"A":[[14.723882102966309,-0.026793038472533226,-780.6560791015622],[0.0048254717141389845,14.665066623687744,-569.0571716308593]],"zoom":1.8,"pose":{"lat":44.8980873,"lon":-68.7871837,"alt":15.62,"yaw":-156.5,"model":"MAVIC2-ENTERPRISE-ADVANCED","pitch":-17.0,"roll":0.0,"W":8000,"H":6000,"fx":9600.0,"cx":4000.0,"cy":3000.0,"zoom":1.8},"boxes":[],"hit":false},{"n":"p14","rgb":"DJI_0040_W.JPG","th":"DJI_0041_T.JPG","W":8000,"H":6000,"A":[[8.34355354309082,0.0,1360.0],[0.0,8.34355354309082,984.0]],"zoom":1.0,"pose":{"lat":44.8974044,"lon":-68.7872506,"alt":1.92,"yaw":118.3,"model":"MAVIC2-ENTERPRISE-ADVANCED","pitch":-11.4,"roll":0.0,"W":8000,"H":6000,"fx":5333.333333333333,"cx":4000.0,"cy":3000.0,"zoom":1.0},"boxes":[],"hit":false},{"n":"p15","rgb":"DJI_0060_W.JPG","th":"DJI_0061_T.JPG","W":8000,"H":6000,"A":[[8.179914474487305,-0.014883596450090408,1314.0257568359375],[-0.12935307621955872,8.084577560424805,1057.5419921875]],"zoom":1.0,"pose":{"lat":44.8975368,"lon":-68.7871249,"alt":14.84,"yaw":167.2,"model":"MAVIC2-ENTERPRISE-ADVANCED","pitch":-32.5,"roll":0.0,"W":8000,"H":6000,"fx":5333.333333333333,"cx":4000.0,"cy":3000.0,"zoom":1.0},"boxes":[[0.602,4825,5714,23,47,"rgb"],[0.509,7693,5280,70,116,"rgb"],[0.485,7655,5332,131,108,"rgb"]],"hit":false},{"n":"p16","rgb":"DJI_0078_W.JPG","th":"DJI_0079_T.JPG","W":8000,"H":6000,"A":[[8.16605281829834,-0.0033248101826757193,1319.223876953125],[0.012105153873562813,7.935759544372559,1029.013916015625]],"zoom":1.0,"pose":{"lat":44.8974634,"lon":-68.7866506,"alt":20.41,"yaw":-88.1,"model":"MAVIC2-ENTERPRISE-ADVANCED","pitch":-31.6,"roll":0.0,"W":8000,"H":6000,"fx":5333.333333333333,"cx":4000.0,"cy":3000.0,"zoom":1.0},"boxes":[[0.831,3480,2620,94,225,"both"],[0.722,4087,3704,116,227,"both"],[0.468,7250,549,60,87,"rgb"]],"hit":false},{"n":"p17","rgb":"DJI_0096_W.JPG","th":"DJI_0097_T.JPG","W":8000,"H":6000,"A":[[8.250665664672852,-0.09370031952857971,1336.059326171875],[0.07058142870664597,8.271450996398926,1145.5347900390625]],"zoom":1.0,"pose":{"lat":44.8974491,"lon":-68.7857649,"alt":47.65,"yaw":-71.7,"model":"MAVIC2-ENTERPRISE-ADVANCED","pitch":-43.4,"roll":0.0,"W":8000,"H":6000,"fx":5333.333333333333,"cx":4000.0,"cy":3000.0,"zoom":1.0},"boxes":[[0.8,3198,2804,43,101,"rgb"],[0.687,3515,3540,50,122,"rgb"]],"hit":false},{"n":"p18","rgb":"DJI_0114_W.JPG","th":"DJI_0115_T.JPG","W":8000,"H":6000,"A":[[8.241884231567383,0.16293472051620483,1197.3011474609375],[-0.22650566697120667,8.47610855102539,858.4288330078125]],"zoom":1.0,"pose":{"lat":44.8976469,"lon":-68.7862094,"alt":47.62,"yaw":-107.4,"model":"MAVIC2-ENTERPRISE-ADVANCED","pitch":-54.4,"roll":0.0,"W":8000,"H":6000,"fx":5333.333333333333,"cx":4000.0,"cy":3000.0,"zoom":1.0},"boxes":[[0.851,4394,2726,61,122,"both"],[0.644,4260,2248,139,106,"rgb"],[0.455,6757,613,139,27,"rgb"]],"hit":false},{"n":"p19","rgb":"DJI_0132_W.JPG","th":"DJI_0133_T.JPG","W":8000,"H":6000,"A":[[8.104464530944824,-0.3657512664794922,1401.7926025390625],[0.11500141769647598,8.057035446166992,982.2020874023438]],"zoom":1.0,"pose":{"lat":44.8981488,"lon":-68.7868481,"alt":47.9,"yaw":168.5,"model":"MAVIC2-ENTERPRISE-ADVANCED","pitch":-42.6,"roll":0.0,"W":8000,"H":6000,"fx":5333.333333333333,"cx":4000.0,"cy":3000.0,"zoom":1.0},"boxes":[[0.85,4303,2303,40,110,"both"]],"hit":false},{"n":"p20","rgb":"DJI_0150_W.JPG","th":"DJI_0151_T.JPG","W":8000,"H":6000,"A":[[8.196773529052734,0.041145045310258865,1330.16259765625],[0.026184868067502975,8.230218887329102,924.62939453125]],"zoom":1.0,"pose":{"lat":44.8976692,"lon":-68.7871903,"alt":47.73,"yaw":164.7,"model":"MAVIC2-ENTERPRISE-ADVANCED","pitch":-48.6,"roll":0.0,"W":8000,"H":6000,"fx":5333.333333333333,"cx":4000.0,"cy":3000.0,"zoom":1.0},"boxes":[[0.82,1678,4310,79,101,"rgb"],[0.695,4354,3681,59,104,"rgb"]],"hit":false},{"n":"p21","rgb":"DJI_0168_W.JPG","th":"DJI_0169_T.JPG","W":8000,"H":6000,"A":[[8.106181144714355,-0.17097672820091248,1331.928466796875],[-0.026319535449147224,8.095176696777344,1014.349365234375]],"zoom":1.0,"pose":{"lat":44.8976776,"lon":-68.7872047,"alt":47.61,"yaw":-160.1,"model":"MAVIC2-ENTERPRISE-ADVANCED","pitch":-38.5,"roll":0.0,"W":8000,"H":6000,"fx":5333.333333333333,"cx":4000.0,"cy":3000.0,"zoom":1.0},"boxes":[[0.72,2443,4891,63,69,"both"],[0.669,2104,5889,69,65,"rgb"],[0.537,4382,4639,88,190,"rgb"],[0.488,5298,3765,31,63,"rgb"]],"hit":false},{"n":"p22","rgb":"DJI_0182_W.JPG","th":"DJI_0183_T.JPG","W":8000,"H":6000,"A":[[13.08789520263672,-0.023816034197807312,-249.47207031250036],[0.004289308190345765,13.035614776611329,-172.49526367187514]],"zoom":1.6,"pose":{"lat":44.8973203,"lon":-68.7867671,"alt":47.38,"yaw":-111.5,"model":"MAVIC2-ENTERPRISE-ADVANCED","pitch":-38.3,"roll":0.0,"W":8000,"H":6000,"fx":8533.333333333334,"cx":4000.0,"cy":3000.0,"zoom":1.6},"boxes":[[0.635,4979,3302,137,275,"thermal"],[0.474,3875,3347,197,277,"thermal"]],"hit":true},{"n":"p23","rgb":"DJI_0184_W.JPG","th":"DJI_0185_T.JPG","W":8000,"H":6000,"A":[[12.92429651260376,-0.023518333770334722,-196.35366943359395],[0.0042356918379664425,12.872669591903687,-132.83907287597663]],"zoom":1.58,"pose":{"lat":44.8972993,"lon":-68.7867569,"alt":47.42,"yaw":-111.1,"model":"MAVIC2-ENTERPRISE-ADVANCED","pitch":-38.3,"roll":0.0,"W":8000,"H":6000,"fx":8426.666666666666,"cx":4000.0,"cy":3000.0,"zoom":1.58},"boxes":[[0.879,5239,3358,87,162,"both"],[0.549,4068,3352,145,239,"thermal"]],"hit":true},{"n":"p24","rgb":"DJI_0186_W.JPG","th":"DJI_0187_T.JPG","W":8000,"H":6000,"A":[[12.92429651260376,-0.023518333770334722,-196.35366943359395],[0.0042356918379664425,12.872669591903687,-132.83907287597663]],"zoom":1.58,"pose":{"lat":44.897236,"lon":-68.7867233,"alt":47.58,"yaw":-104.7,"model":"MAVIC2-ENTERPRISE-ADVANCED","pitch":-38.3,"roll":0.0,"W":8000,"H":6000,"fx":8426.666666666666,"cx":4000.0,"cy":3000.0,"zoom":1.58},"boxes":[[0.906,5412,3253,82,182,"both"],[0.479,4190,3324,158,220,"thermal"]],"hit":true},{"n":"p25","rgb":"DJI_0188_W.JPG","th":"DJI_0189_T.JPG","W":8000,"H":6000,"A":[[12.92429651260376,-0.023518333770334722,-196.35366943359395],[0.0042356918379664425,12.872669591903687,-132.83907287597663]],"zoom":1.58,"pose":{"lat":44.897104,"lon":-68.7866748,"alt":47.36,"yaw":-92.1,"model":"MAVIC2-ENTERPRISE-ADVANCED","pitch":-38.3,"roll":0.0,"W":8000,"H":6000,"fx":8426.666666666666,"cx":4000.0,"cy":3000.0,"zoom":1.58},"boxes":[[0.948,5658,2932,78,182,"both"],[0.481,4527,3154,148,231,"thermal"]],"hit":true},{"n":"p26","rgb":"DJI_0190_W.JPG","th":"DJI_0191_T.JPG","W":8000,"H":6000,"A":[[12.92429651260376,-0.023518333770334722,-196.35366943359395],[0.0042356918379664425,12.872669591903687,-132.83907287597663]],"zoom":1.58,"pose":{"lat":44.8970946,"lon":-68.7868496,"alt":47.57,"yaw":-90.6,"model":"MAVIC2-ENTERPRISE-ADVANCED","pitch":-50.5,"roll":0.0,"W":8000,"H":6000,"fx":8426.666666666666,"cx":4000.0,"cy":3000.0,"zoom":1.58},"boxes":[[0.873,5871,2323,97,184,"both"],[0.67,6781,1989,52,46,"rgb"]],"hit":false},{"n":"p27","rgb":"DJI_0192_W.JPG","th":"DJI_0193_T.JPG","W":8000,"H":6000,"A":[[12.92429651260376,-0.023518333770334722,-196.35366943359395],[0.0042356918379664425,12.872669591903687,-132.83907287597663]],"zoom":1.58,"pose":{"lat":44.8971325,"lon":-68.7869386,"alt":47.57,"yaw":-88.9,"model":"MAVIC2-ENTERPRISE-ADVANCED","pitch":-50.5,"roll":0.0,"W":8000,"H":6000,"fx":8426.666666666666,"cx":4000.0,"cy":3000.0,"zoom":1.58},"boxes":[[0.642,6131,2652,51,49,"rgb"],[0.533,5158,3078,91,198,"both"],[0.531,3679,3425,194,229,"thermal"],[0.513,5063,3070,161,259,"thermal"]],"hit":true},{"n":"p28","rgb":"DJI_0194_W.JPG","th":"DJI_0195_T.JPG","W":8000,"H":6000,"A":[[12.92429651260376,-0.023518333770334722,-196.35366943359395],[0.0042356918379664425,12.872669591903687,-132.83907287597663]],"zoom":1.58,"pose":{"lat":44.897217,"lon":-68.7869915,"alt":47.49,"yaw":-104.9,"model":"MAVIC2-ENTERPRISE-ADVANCED","pitch":-50.5,"roll":0.0,"W":8000,"H":6000,"fx":8426.666666666666,"cx":4000.0,"cy":3000.0,"zoom":1.58},"boxes":[[0.765,5183,3556,114,206,"both"]],"hit":false},{"n":"p29","rgb":"DJI_0196_W.JPG","th":"DJI_0197_T.JPG","W":8000,"H":6000,"A":[[12.92429651260376,-0.023518333770334722,-196.35366943359395],[0.0042356918379664425,12.872669591903687,-132.83907287597663]],"zoom":1.58,"pose":{"lat":44.8971984,"lon":-68.7871027,"alt":47.39,"yaw":-106.0,"model":"MAVIC2-ENTERPRISE-ADVANCED","pitch":-56.8,"roll":0.0,"W":8000,"H":6000,"fx":8426.666666666666,"cx":4000.0,"cy":3000.0,"zoom":1.58},"boxes":[[0.856,5226,4094,118,185,"both"],[0.535,5999,4100,30,46,"rgb"],[0.527,5077,3129,39,57,"rgb"]],"hit":false},{"n":"p30","rgb":"DJI_0198_W.JPG","th":"DJI_0199_T.JPG","W":8000,"H":6000,"A":[[12.92429651260376,-0.023518333770334722,-196.35366943359395],[0.0042356918379664425,12.872669591903687,-132.83907287597663]],"zoom":1.58,"pose":{"lat":44.8971973,"lon":-68.7871042,"alt":47.5,"yaw":-105.9,"model":"MAVIC2-ENTERPRISE-ADVANCED","pitch":-56.8,"roll":0.0,"W":8000,"H":6000,"fx":8426.666666666666,"cx":4000.0,"cy":3000.0,"zoom":1.58},"boxes":[[0.702,5354,4164,48,50,"both"],[0.593,3767,4019,143,291,"thermal"]],"hit":true},{"n":"p31","rgb":"DJI_0200_W.JPG","th":"DJI_0201_T.JPG","W":8000,"H":6000,"A":[[12.92429651260376,-0.023518333770334722,-196.35366943359395],[0.0042356918379664425,12.872669591903687,-132.83907287597663]],"zoom":1.58,"pose":{"lat":44.897177,"lon":-68.787098,"alt":47.7,"yaw":-104.7,"model":"MAVIC2-ENTERPRISE-ADVANCED","pitch":-56.8,"roll":0.0,"W":8000,"H":6000,"fx":8426.666666666666,"cx":4000.0,"cy":3000.0,"zoom":1.58},"boxes":[[0.846,5549,4113,158,200,"both"],[0.49,4011,4005,151,288,"thermal"]],"hit":true},{"n":"p32","rgb":"DJI_0202_W.JPG","th":"DJI_0203_T.JPG","W":8000,"H":6000,"A":[[12.92429651260376,-0.023518333770334722,-196.35366943359395],[0.0042356918379664425,12.872669591903687,-132.83907287597663]],"zoom":1.58,"pose":{"lat":44.8971218,"lon":-68.7870811,"alt":47.61,"yaw":-92.4,"model":"MAVIC2-ENTERPRISE-ADVANCED","pitch":-56.8,"roll":0.0,"W":8000,"H":6000,"fx":8426.666666666666,"cx":4000.0,"cy":3000.0,"zoom":1.58},"boxes":[[0.847,5733,3755,167,200,"both"],[0.693,5315,2721,66,79,"rgb"],[0.554,4070,3936,276,256,"thermal"]],"hit":true},{"n":"p33","rgb":"DJI_0204_W.JPG","th":"DJI_0205_T.JPG","W":8000,"H":6000,"A":[[12.92429651260376,-0.023518333770334722,-196.35366943359395],[0.0042356918379664425,12.872669591903687,-132.83907287597663]],"zoom":1.58,"pose":{"lat":44.8970124,"lon":-68.787066,"alt":47.5,"yaw":-72.2,"model":"MAVIC2-ENTERPRISE-ADVANCED","pitch":-56.8,"roll":0.0,"W":8000,"H":6000,"fx":8426.666666666666,"cx":4000.0,"cy":3000.0,"zoom":1.58},"boxes":[[0.693,6690,2062,63,49,"rgb"]],"hit":false},{"n":"p34","rgb":"DJI_0206_W.JPG","th":"DJI_0207_T.JPG","W":8000,"H":6000,"A":[[12.92429651260376,-0.023518333770334722,-196.35366943359395],[0.0042356918379664425,12.872669591903687,-132.83907287597663]],"zoom":1.58,"pose":{"lat":44.8969353,"lon":-68.7870817,"alt":47.52,"yaw":-58.6,"model":"MAVIC2-ENTERPRISE-ADVANCED","pitch":-56.8,"roll":0.0,"W":8000,"H":6000,"fx":8426.666666666666,"cx":4000.0,"cy":3000.0,"zoom":1.58},"boxes":[[0.507,5043,5360,51,84,"rgb"],[0.47,6404,1957,50,70,"rgb"]],"hit":false},{"n":"p35","rgb":"DJI_0208_W.JPG","th":"DJI_0209_T.JPG","W":8000,"H":6000,"A":[[12.92429651260376,-0.023518333770334722,-196.35366943359395],[0.0042356918379664425,12.872669591903687,-132.83907287597663]],"zoom":1.58,"pose":{"lat":44.8969055,"lon":-68.7868956,"alt":47.67,"yaw":-58.7,"model":"MAVIC2-ENTERPRISE-ADVANCED","pitch":-36.5,"roll":0.0,"W":8000,"H":6000,"fx":8426.666666666666,"cx":4000.0,"cy":3000.0,"zoom":1.58},"boxes":[[0.589,6197,1059,30,61,"rgb"],[0.579,5413,3968,47,77,"rgb"],[0.469,5444,4213,187,236,"thermal"]],"hit":false},{"n":"p36","rgb":"DJI_0210_W.JPG","th":"DJI_0211_T.JPG","W":8000,"H":6000,"A":[[12.92429651260376,-0.023518333770334722,-196.35366943359395],[0.0042356918379664425,12.872669591903687,-132.83907287597663]],"zoom":1.58,"pose":{"lat":44.8969795,"lon":-68.7868201,"alt":47.75,"yaw":-52.6,"model":"MAVIC2-ENTERPRISE-ADVANCED","pitch":-39.9,"roll":0.0,"W":8000,"H":6000,"fx":8426.666666666666,"cx":4000.0,"cy":3000.0,"zoom":1.58},"boxes":[[0.75,3316,3213,91,111,"both"],[0.535,1281,4051,49,84,"rgb"],[0.479,4456,34,27,65,"rgb"]],"hit":false},{"n":"p37","rgb":"DJI_0212_W.JPG","th":"DJI_0213_T.JPG","W":8000,"H":6000,"A":[[12.92429651260376,-0.023518333770334722,-196.35366943359395],[0.0042356918379664425,12.872669591903687,-132.83907287597663]],"zoom":1.58,"pose":{"lat":44.896995,"lon":-68.7868016,"alt":47.63,"yaw":-72.3,"model":"MAVIC2-ENTERPRISE-ADVANCED","pitch":-39.9,"roll":0.0,"W":8000,"H":6000,"fx":8426.666666666666,"cx":4000.0,"cy":3000.0,"zoom":1.58},"boxes":[[0.786,5196,3207,84,114,"both"],[0.461,4044,3645,144,246,"thermal"]],"hit":true},{"n":"p38","rgb":"DJI_0214_W.JPG","th":"DJI_0215_T.JPG","W":8000,"H":6000,"A":[[12.92429651260376,-0.023518333770334722,-196.35366943359395],[0.0042356918379664425,12.872669591903687,-132.83907287597663]],"zoom":1.58,"pose":{"lat":44.8969965,"lon":-68.7868004,"alt":47.68,"yaw":-73.4,"model":"MAVIC2-ENTERPRISE-ADVANCED","pitch":-42.6,"roll":0.0,"W":8000,"H":6000,"fx":8426.666666666666,"cx":4000.0,"cy":3000.0,"zoom":1.58},"boxes":[[0.717,5333,2804,91,132,"both"]],"hit":false},{"n":"p39","rgb":"DJI_0216_W.JPG","th":"DJI_0217_T.JPG","W":8000,"H":6000,"A":[[12.92429651260376,-0.023518333770334722,-196.35366943359395],[0.0042356918379664425,12.872669591903687,-132.83907287597663]],"zoom":1.58,"pose":{"lat":44.8969946,"lon":-68.7868012,"alt":47.75,"yaw":-76.4,"model":"MAVIC2-ENTERPRISE-ADVANCED","pitch":-42.6,"roll":0.0,"W":8000,"H":6000,"fx":8426.666666666666,"cx":4000.0,"cy":3000.0,"zoom":1.58},"boxes":[[0.714,5664,2820,108,121,"both"],[0.555,4492,3150,143,262,"thermal"],[0.51,920,480,29,61,"rgb"],[0.508,4574,5162,36,62,"rgb"]],"hit":true},{"n":"p40","rgb":"DJI_0218_W.JPG","th":"DJI_0219_T.JPG","W":8000,"H":6000,"A":[[12.92429651260376,-0.023518333770334722,-196.35366943359395],[0.0042356918379664425,12.872669591903687,-132.83907287597663]],"zoom":1.58,"pose":{"lat":44.8969903,"lon":-68.7868022,"alt":47.68,"yaw":-77.0,"model":"MAVIC2-ENTERPRISE-ADVANCED","pitch":-42.6,"roll":0.0,"W":8000,"H":6000,"fx":8426.666666666666,"cx":4000.0,"cy":3000.0,"zoom":1.58},"boxes":[[0.606,6436,2392,50,35,"rgb"],[0.598,4566,2900,34,53,"both"],[0.555,5857,2085,53,77,"rgb"]],"hit":false},{"n":"p41","rgb":"DJI_0222_W.JPG","th":"DJI_0223_T.JPG","W":8000,"H":6000,"A":[[12.92429651260376,-0.023518333770334722,-196.35366943359395],[0.0042356918379664425,12.872669591903687,-132.83907287597663]],"zoom":1.58,"pose":{"lat":44.8969588,"lon":-68.7868158,"alt":47.5,"yaw":-75.2,"model":"MAVIC2-ENTERPRISE-ADVANCED","pitch":-42.6,"roll":0.0,"W":8000,"H":6000,"fx":8426.666666666666,"cx":4000.0,"cy":3000.0,"zoom":1.58},"boxes":[[0.554,6212,2153,36,60,"rgb"],[0.523,4580,2693,159,238,"thermal"]],"hit":false},{"n":"p42","rgb":"DJI_0224_W.JPG","th":"DJI_0225_T.JPG","W":8000,"H":6000,"A":[[12.92429651260376,-0.023518333770334722,-196.35366943359395],[0.0042356918379664425,12.872669591903687,-132.83907287597663]],"zoom":1.58,"pose":{"lat":44.8969501,"lon":-68.7868186,"alt":47.87,"yaw":-65.9,"model":"MAVIC2-ENTERPRISE-ADVANCED","pitch":-42.6,"roll":0.0,"W":8000,"H":6000,"fx":8426.666666666666,"cx":4000.0,"cy":3000.0,"zoom":1.58},"boxes":[],"hit":false},{"n":"p43","rgb":"DJI_0226_W.JPG","th":"DJI_0227_T.JPG","W":8000,"H":6000,"A":[[12.92429651260376,-0.023518333770334722,-196.35366943359395],[0.0042356918379664425,12.872669591903687,-132.83907287597663]],"zoom":1.58,"pose":{"lat":44.8969508,"lon":-68.7868195,"alt":47.59,"yaw":-66.1,"model":"MAVIC2-ENTERPRISE-ADVANCED","pitch":-42.6,"roll":0.0,"W":8000,"H":6000,"fx":8426.666666666666,"cx":4000.0,"cy":3000.0,"zoom":1.58},"boxes":[[0.51,2799,2543,31,63,"rgb"]],"hit":false},{"n":"p44","rgb":"DJI_0230_W.JPG","th":"DJI_0231_T.JPG","W":8000,"H":6000,"A":[[19.1410467338562,-0.03483095001429319,-2214.8529028320304],[0.00627311322838068,19.064586610794066,-1639.774323120117]],"zoom":2.34,"pose":{"lat":44.8968944,"lon":-68.7868473,"alt":47.6,"yaw":-65.9,"model":"MAVIC2-ENTERPRISE-ADVANCED","pitch":-42.6,"roll":0.0,"W":8000,"H":6000,"fx":12479.999999999998,"cx":4000.0,"cy":3000.0,"zoom":2.34},"boxes":[[0.501,7656,5799,23,55,"rgb"],[0.488,1734,5469,21,62,"rgb"]],"hit":false},{"n":"p45","rgb":"DJI_0232_W.JPG","th":"DJI_0233_T.JPG","W":8000,"H":6000,"A":[[19.1410467338562,-0.03483095001429319,-2214.8529028320304],[0.00627311322838068,19.064586610794066,-1639.774323120117]],"zoom":2.34,"pose":{"lat":44.8968777,"lon":-68.786856,"alt":47.83,"yaw":-60.1,"model":"MAVIC2-ENTERPRISE-ADVANCED","pitch":-42.6,"roll":0.0,"W":8000,"H":6000,"fx":12479.999999999998,"cx":4000.0,"cy":3000.0,"zoom":2.34},"boxes":[[0.495,5929,25,70,122,"rgb"],[0.466,5912,3722,23,57,"rgb"]],"hit":false},{"n":"p46","rgb":"DJI_0242_W.JPG","th":"DJI_0243_T.JPG","W":8000,"H":6000,"A":[[8.2587890625,0.06579103320837021,1302.8848876953125],[-0.014895531348884106,8.104232788085938,1024.2830810546875]],"zoom":1.0,"pose":{"lat":44.8973951,"lon":-68.7869973,"alt":47.37,"yaw":-133.5,"model":"MAVIC2-ENTERPRISE-ADVANCED","pitch":-42.6,"roll":0.0,"W":8000,"H":6000,"fx":5333.333333333333,"cx":4000.0,"cy":3000.0,"zoom":1.0},"boxes":[[0.852,4882,2944,60,131,"both"],[0.484,5688,4026,81,105,"rgb"]],"hit":false},{"n":"p47","rgb":"DJI_0244_W.JPG","th":"DJI_0245_T.JPG","W":8000,"H":6000,"A":[[8.187759399414062,0.01082714181393385,1337.18115234375],[-0.008799342438578606,8.077991485595703,1032.98583984375]],"zoom":1.0,"pose":{"lat":44.8973753,"lon":-68.7869735,"alt":47.53,"yaw":-133.4,"model":"MAVIC2-ENTERPRISE-ADVANCED","pitch":-42.6,"roll":0.0,"W":8000,"H":6000,"fx":5333.333333333333,"cx":4000.0,"cy":3000.0,"zoom":1.0},"boxes":[[0.885,5112,3008,59,108,"both"]],"hit":false},{"n":"p48","rgb":"DJI_0248_W.JPG","th":"DJI_0249_T.JPG","W":8000,"H":6000,"A":[[8.19392204284668,0.03669211268424988,1330.3746337890625],[-0.024505004286766052,8.08534049987793,1037.1949462890625]],"zoom":1.0,"pose":{"lat":44.8973751,"lon":-68.7869727,"alt":47.58,"yaw":-131.8,"model":"MAVIC2-ENTERPRISE-ADVANCED","pitch":-42.6,"roll":0.0,"W":8000,"H":6000,"fx":5333.333333333333,"cx":4000.0,"cy":3000.0,"zoom":1.0},"boxes":[[0.849,4926,3256,58,125,"both"],[0.64,5904,4099,51,67,"rgb"],[0.504,4092,2649,83,137,"thermal"]],"hit":true},{"n":"p49","rgb":"DJI_0250_W.JPG","th":"DJI_0251_T.JPG","W":8000,"H":6000,"A":[[8.245532035827637,0.008835094049572945,1325.793701171875],[-0.051660943776369095,8.341501235961914,965.0631103515625]],"zoom":1.0,"pose":{"lat":44.8973651,"lon":-68.7869593,"alt":47.5,"yaw":-131.6,"model":"MAVIC2-ENTERPRISE-ADVANCED","pitch":-38.7,"roll":0.0,"W":8000,"H":6000,"fx":5333.333333333333,"cx":4000.0,"cy":3000.0,"zoom":1.0},"boxes":[[0.824,5062,3641,64,121,"both"],[0.615,6097,4500,52,68,"rgb"]],"hit":false},{"n":"p50","rgb":"DJI_0281_W.JPG","th":"DJI_0282_T.JPG","W":8000,"H":6000,"A":[[9.161526641845704,-0.01667122393846512,1025.3695507812497],[0.003002515733242035,9.12493034362793,779.2533154296872]],"zoom":1.12,"pose":{"lat":44.8974442,"lon":-68.7876611,"alt":47.8,"yaw":-163.9,"model":"MAVIC2-ENTERPRISE-ADVANCED","pitch":-38.3,"roll":0.0,"W":8000,"H":6000,"fx":5973.333333333334,"cx":4000.0,"cy":3000.0,"zoom":1.12},"boxes":[[0.807,4345,3187,65,148,"both"],[0.559,4424,3175,96,176,"thermal"],[0.476,4467,2883,63,143,"both"]],"hit":false},{"n":"p51","rgb":"DJI_0283_W.JPG","th":"DJI_0284_T.JPG","W":8000,"H":6000,"A":[[9.161526641845704,-0.01667122393846512,1025.3695507812497],[0.003002515733242035,9.12493034362793,779.2533154296872]],"zoom":1.12,"pose":{"lat":44.897497,"lon":-68.7880258,"alt":47.89,"yaw":166.4,"model":"MAVIC2-ENTERPRISE-ADVANCED","pitch":-37.4,"roll":0.0,"W":8000,"H":6000,"fx":5973.333333333334,"cx":4000.0,"cy":3000.0,"zoom":1.12},"boxes":[[0.929,4483,2682,55,151,"both"],[0.923,4161,2881,52,148,"both"]],"hit":false},{"n":"p52","rgb":"DJI_0285_W.JPG","th":"DJI_0286_T.JPG","W":8000,"H":6000,"A":[[9.161526641845704,-0.01667122393846512,1025.3695507812497],[0.003002515733242035,9.12493034362793,779.2533154296872]],"zoom":1.12,"pose":{"lat":44.897499,"lon":-68.7880259,"alt":47.74,"yaw":165.7,"model":"MAVIC2-ENTERPRISE-ADVANCED","pitch":-29.2,"roll":0.0,"W":8000,"H":6000,"fx":5973.333333333334,"cx":4000.0,"cy":3000.0,"zoom":1.12},"boxes":[[0.909,4230,3937,63,151,"both"],[0.553,1592,2146,84,58,"rgb"]],"hit":false},{"n":"p53","rgb":"DJI_0287_W.JPG","th":"DJI_0288_T.JPG","W":8000,"H":6000,"A":[[9.161526641845704,-0.01667122393846512,1025.3695507812497],[0.003002515733242035,9.12493034362793,779.2533154296872]],"zoom":1.12,"pose":{"lat":44.8974996,"lon":-68.7880251,"alt":47.88,"yaw":165.8,"model":"MAVIC2-ENTERPRISE-ADVANCED","pitch":-29.8,"roll":0.0,"W":8000,"H":6000,"fx":5973.333333333334,"cx":4000.0,"cy":3000.0,"zoom":1.12},"boxes":[[0.917,4272,3467,58,150,"both"],[0.877,4584,3015,62,149,"both"]],"hit":false},{"n":"p54","rgb":"DJI_0290_W.JPG","th":"DJI_0291_T.JPG","W":8000,"H":6000,"A":[[16.3598690032959,-0.02977004274725914,-1311.840087890625],[0.005361635237932205,16.29451847076416,-965.6190795898438]],"zoom":2.0,"pose":{"lat":44.897485,"lon":-68.7880198,"alt":47.74,"yaw":165.8,"model":"MAVIC2-ENTERPRISE-ADVANCED","pitch":-28.3,"roll":0.0,"W":8000,"H":6000,"fx":10666.666666666666,"cx":4000.0,"cy":3000.0,"zoom":2.0},"boxes":[[0.7,4463,4800,112,234,"both"],[0.472,7822,3224,23,54,"rgb"]],"hit":false},{"n":"p55","rgb":"DJI_0296_W.JPG","th":"DJI_0297_T.JPG","W":8000,"H":6000,"A":[[16.3598690032959,-0.02977004274725914,-1311.840087890625],[0.005361635237932205,16.29451847076416,-965.6190795898438]],"zoom":2.0,"pose":{"lat":44.8973862,"lon":-68.7881967,"alt":47.89,"yaw":149.5,"model":"MAVIC2-ENTERPRISE-ADVANCED","pitch":-28.0,"roll":0.0,"W":8000,"H":6000,"fx":10666.666666666666,"cx":4000.0,"cy":3000.0,"zoom":2.0},"boxes":[[0.871,4163,5360,145,262,"both"]],"hit":false},{"n":"p56","rgb":"DJI_0305_W.JPG","th":"DJI_0306_T.JPG","W":8000,"H":6000,"A":[[8.136338233947754,-0.003792660078033805,1353.6033935546875],[0.005153757520020008,8.094970703125,1024.8529052734375]],"zoom":1.0,"pose":{"lat":44.8971817,"lon":-68.7880419,"alt":47.75,"yaw":161.5,"model":"MAVIC2-ENTERPRISE-ADVANCED","pitch":-41.7,"roll":0.0,"W":8000,"H":6000,"fx":5333.333333333333,"cx":4000.0,"cy":3000.0,"zoom":1.0},"boxes":[[0.869,3458,4674,86,147,"both"],[0.491,4041,3026,143,185,"thermal"]],"hit":true},{"n":"p57","rgb":"DJI_0332_W.JPG","th":"DJI_0333_T.JPG","W":8000,"H":6000,"A":[[8.194141387939453,-0.03219037875533104,1338.005859375],[-0.029997073113918304,8.147441864013672,1024.4666748046875]],"zoom":1.0,"pose":{"lat":44.8971723,"lon":-68.7880751,"alt":48.32,"yaw":154.5,"model":"MAVIC2-ENTERPRISE-ADVANCED","pitch":-50.3,"roll":0.0,"W":8000,"H":6000,"fx":5333.333333333333,"cx":4000.0,"cy":3000.0,"zoom":1.0},"boxes":[[0.638,3813,3545,80,116,"both"]],"hit":false},{"n":"p58","rgb":"DJI_0335_W.JPG","th":"DJI_0336_T.JPG","W":8000,"H":6000,"A":[[8.193319320678711,-0.028353959321975708,1338.554931640625],[-0.029162848368287086,8.147076606750488,1025.28662109375]],"zoom":1.0,"pose":{"lat":44.8971723,"lon":-68.7880751,"alt":48.26,"yaw":154.4,"model":"MAVIC2-ENTERPRISE-ADVANCED","pitch":-50.3,"roll":0.0,"W":8000,"H":6000,"fx":5333.333333333333,"cx":4000.0,"cy":3000.0,"zoom":1.0},"boxes":[],"hit":false},{"n":"p59","rgb":"DJI_0337_W.JPG","th":"DJI_0338_T.JPG","W":8000,"H":6000,"A":[[8.19594669342041,-0.029196834191679955,1335.5567626953125],[-0.023134363815188408,8.117035865783691,1028.771728515625]],"zoom":1.0,"pose":{"lat":44.8971714,"lon":-68.7880732,"alt":48.45,"yaw":151.0,"model":"MAVIC2-ENTERPRISE-ADVANCED","pitch":-53.4,"roll":0.0,"W":8000,"H":6000,"fx":5333.333333333333,"cx":4000.0,"cy":3000.0,"zoom":1.0},"boxes":[],"hit":false}];
+
+const GSIG={"gps_m": 3.5, "yaw_deg": 3.5, "pitch_deg": 2.625, "roll_deg": 1.75, "alt_m": 1.75, "terrain_m": 5.25}, GMIN=8.0;
+function gRay(p,u,v,dy,dp,dr){
+  const yaw=(p.yaw+dy)*Math.PI/180, pit=(p.pitch+dp)*Math.PI/180, rol=(p.roll+dr)*Math.PI/180;
+  const f=[Math.cos(pit)*Math.cos(yaw),Math.cos(pit)*Math.sin(yaw),-Math.sin(pit)];
+  let r=[-Math.sin(yaw),Math.cos(yaw),0];
+  let d=[f[1]*r[2]-f[2]*r[1],f[2]*r[0]-f[0]*r[2],f[0]*r[1]-f[1]*r[0]];
+  if(rol){const c=Math.cos(rol),s=Math.sin(rol);
+    const r2=r.map((a,k)=>c*a+s*d[k]), d2=r.map((a,k)=>-s*a+c*d[k]); r=r2; d=d2;}
+  const a=(u-p.cx)/p.fx, b=(v-p.cy)/p.fx;
+  const q=[0,1,2].map(k=>f[k]+a*r[k]+b*d[k]); const n=Math.hypot(...q);
+  return q.map(x=>x/n);
+}
+function gGround(p,u,v,dy=0,dp=0,dr=0,da=0,dt=0){
+  const r=gRay(p,u,v,dy,dp,dr);
+  if(r[2]<=Math.sin(GMIN*Math.PI/180)) return null;
+  const h=p.alt+da-dt; if(h<=0) return null;
+  const t=h/r[2]; return [r[0]*t,r[1]*t];
+}
+function gRng(seed){let a=seed>>>0;return()=>{a=(a+0x6D2B79F5)>>>0;let t=a;
+  t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return((t^(t>>>14))>>>0)/4294967296}}
+function gGauss(rnd){const u=Math.max(1e-12,rnd()),v=rnd();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
+function geoLocate(p,b){
+  if(!p) return {error:"photo lacks GPS/altitude/gimbal metadata"};
+  const u=(b[0]+b[2])/2, v=p.pitch>-75?b[3]:(b[1]+b[3])/2;
+  const g=gGround(p,u,v);
+  if(!g) return {error:"too close to the horizon to place"};
+  const R=6378137, lat=p.lat+g[0]/R*180/Math.PI,
+        lon=p.lon+g[1]/(R*Math.cos(p.lat*Math.PI/180))*180/Math.PI;
+  const rnd=gRng(1+Math.round(u)*7919+Math.round(v)), miss=[];
+  for(let i=0;i<300;i++){
+    const gs=gGround(p,u,v,gGauss(rnd)*GSIG.yaw_deg,gGauss(rnd)*GSIG.pitch_deg,
+      gGauss(rnd)*GSIG.roll_deg,gGauss(rnd)*GSIG.alt_m,gGauss(rnd)*GSIG.terrain_m);
+    if(!gs){miss.push(Infinity);continue}
+    miss.push(Math.hypot(gs[0]-g[0]+gGauss(rnd)*GSIG.gps_m, gs[1]-g[1]+gGauss(rnd)*GSIG.gps_m));
+  }
+  miss.sort((a,b)=>a-b); const r90=miss[Math.floor(0.9*miss.length)];
+  if(!isFinite(r90)) return {error:"too close to the horizon to place"};
+  return {lat, lon, radius_m:r90, range_m:Math.hypot(g[0],g[1])};
+}
+async function locateBox(r,b){ return geoLocate(r.pose,b); }
+
+
+const TW=640, TH=512;
+let CUR=0, MODE="move", USER=[], SEL=null, HOV=null;
+const P={rgb:{el:prgb,img:irgb,svg:srgb,v:{s:1,tx:0,ty:0}}, th:{el:pth,img:ith,svg:sth,v:{s:1,tx:0,ty:0}}};
+
+// ---- geometry: boxes live in full-res RGB pixels; thermal via the rig affine
+const d=()=>DATA[CUR];
+function t2r(x,y){const A=d().A;return [A[0][0]*x+A[0][1]*y+A[0][2],A[1][0]*x+A[1][1]*y+A[1][2]]}
+function r2t(x,y){const A=d().A, det=A[0][0]*A[1][1]-A[0][1]*A[1][0], u=x-A[0][2], v=y-A[1][2];
+  return [(A[1][1]*u-A[0][1]*v)/det,(-A[1][0]*u+A[0][0]*v)/det]}
+function bbox(pts){const xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]);
+  return [Math.min(...xs),Math.min(...ys),Math.max(...xs),Math.max(...ys)]}
+function inPane(k,b){ // b: rgb box [x0,y0,x1,y1] -> pane-image coords
+  return k==="rgb"?b:bbox([r2t(b[0],b[1]),r2t(b[2],b[1]),r2t(b[0],b[3]),r2t(b[2],b[3])])}
+function fromPane(k,b){
+  return k==="rgb"?b:bbox([t2r(b[0],b[1]),t2r(b[2],b[1]),t2r(b[0],b[3]),t2r(b[2],b[3])])}
+function onImage(k,b){const pb=inPane(k,b),[w,h]=dims(k),cx=(pb[0]+pb[2])/2,cy=(pb[1]+pb[3])/2;
+  return cx>=0&&cy>=0&&cx<=w&&cy<=h}
+const dims=k=>k==="rgb"?[d().W,d().H]:[TW,TH];
+
+// ---- views
+function fitS(k){const r=P[k].el.getBoundingClientRect(),[w,h]=dims(k);return Math.min(r.width/w,r.height/h)}
+function fit(k){const r=P[k].el.getBoundingClientRect(),[w,h]=dims(k),s=fitS(k);
+  P[k].v={s,tx:(r.width-w*s)/2,ty:(r.height-h*s)/2}}
+function apply(k){const {s,tx,ty}=P[k].v;P[k].img.style.transform=`translate(${tx}px,${ty}px) scale(${s})`;draw(k)}
+function clampS(k,s){const f=fitS(k);return Math.max(f*.8,Math.min(f*(k==="rgb"?60:14),s))}
+function zoomAt(k,mx,my,f){const v=P[k].v,s=clampS(k,v.s*f),q=s/v.s;
+  v.tx=mx-(mx-v.tx)*q;v.ty=my-(my-v.ty)*q;v.s=s;apply(k)}
+function focus(k,b,ms=320){ // fly pane k to an rgb box
+  const pb=inPane(k,b),r=P[k].el.getBoundingClientRect(),
+        bw=Math.max(pb[2]-pb[0],k==="rgb"?40:5),bh=Math.max(pb[3]-pb[1],k==="rgb"?40:5);
+  const s=clampS(k,Math.min(r.width/(bw*9),r.height/(bh*9))),
+        cx=(pb[0]+pb[2])/2,cy=(pb[1]+pb[3])/2,
+        to={s,tx:r.width/2-cx*s,ty:r.height/2-cy*s},from={...P[k].v},t0=performance.now();
+  const ease=t=>1-Math.pow(1-t,3);
+  (function step(now){const t=Math.min(1,(now-t0)/ms),e=ease(t);
+    for(const q of ["s","tx","ty"]) P[k].v[q]=from[q]+(to[q]-from[q])*e;
+    apply(k); if(t<1) requestAnimationFrame(step); else placePill();})(t0);
+}
+
+// ---- drawing
+function rect(k,b,cls){const v=P[k].v,pb=inPane(k,b);
+  const x=pb[0]*v.s+v.tx,y=pb[1]*v.s+v.ty,w=Math.max(4,(pb[2]-pb[0])*v.s),h=Math.max(4,(pb[3]-pb[1])*v.s);
+  return {x,y,w,h,svg:`<rect x="${x-2}" y="${y-2}" width="${w+4}" height="${h+4}" rx="3" ${cls}/>`}}
+function allBoxes(){
+  return d().boxes.map((m,i)=>({id:"m"+i,b:[m[1],m[2],m[1]+m[3],m[2]+m[4]],model:m}))
+    .concat(USER.map((u,i)=>({id:"u"+i,b:u.b,user:u})))}
+function draw(k){
+  const out=[], person=getComputedStyle(document.documentElement).getPropertyValue("--person").trim()||"#f0834a";
+  if(k==="rgb"){ // thermal footprint
+    const c=[[0,0],[TW,0],[TW,TH],[0,TH]].map(p=>t2r(...p)),v=P.rgb.v;
+    out.push(`<polygon points="${c.map(p=>`${p[0]*v.s+v.tx},${p[1]*v.s+v.ty}`).join(" ")}"
+      fill="none" stroke="rgba(255,255,255,.28)" stroke-dasharray="5 5" stroke-width="1"/>`)}
+  for(const o of allBoxes()){
+    const own=o.user?o.user.pane===k:(o.model[5]==="thermal"?k==="th":o.model[5]==="rgb"?k==="rgb":true);
+    if(!o.user&&!own&&!onImage(k,o.b)) continue;   // its counterpart falls outside this camera's view
+    const col=o.user?"#ffffff":person, hot=(SEL===o.id||HOV===o.id);
+    out.push(rect(k,o.b,`fill="none" stroke="${col}" stroke-width="${hot?2.4:1.6}"
+      ${own?"":'stroke-dasharray="4 3"'} opacity="${hot?1:.92}"`).svg)}
+  if(DRAG&&DRAG.mark&&DRAG.k===k){const x=Math.min(DRAG.x0,DRAG.x1),y=Math.min(DRAG.y0,DRAG.y1);
+    out.push(`<rect x="${x}" y="${y}" width="${Math.abs(DRAG.x1-DRAG.x0)}" height="${Math.abs(DRAG.y1-DRAG.y0)}"
+      rx="3" fill="rgba(255,255,255,.08)" stroke="#fff" stroke-width="1.6"/>`)}
+  P[k].svg.innerHTML=out.join("");
+}
+const drawAll=()=>{draw("rgb");draw("th");placePill()};
+
+// ---- lat/lon pill: only for the hovered or selected box
+const GEO={};
+function hit(k,mx,my){let best=null,ba=1e18;
+  for(const o of allBoxes()){const r=rect(k,o.b,"");
+    if(mx>=r.x-8&&mx<=r.x+r.w+8&&my>=r.y-8&&my<=r.y+r.h+8&&r.w*r.h<ba){best=o.id;ba=r.w*r.h}}
+  return best}
+let PILLK="rgb";
+function placePill(){
+  const id=HOV||SEL, o=id&&allBoxes().find(x=>x.id===id);
+  if(!o){pill.classList.remove("on");return}
+  const k=PILLK, r=rect(k,o.b,""), pr=P[k].el.getBoundingClientRect(), sr=stage.getBoundingClientRect();
+  const key=CUR+":"+o.b.map(Math.round).join(",");
+  if(!(key in GEO)) GEO[key]=geoLocate(d().pose,o.b);
+  const g=GEO[key];
+  const src=o.model?({both:"RGB + thermal",rgb:"RGB",thermal:"thermal only"})[o.model[5]]+` · ${Math.round(o.model[0]*100)}%`:"your mark";
+  pill.innerHTML=g.error?`<span class="sub">${g.error}</span>`:
+    `${g.lat.toFixed(6)}, ${g.lon.toFixed(6)}<span class="sub">±${Math.max(1,Math.round(g.radius_m))} m · ${src}</span>`;
+  pill.dataset.copy=g.error?"":`${g.lat.toFixed(6)}, ${g.lon.toFixed(6)}`;
+  pill.style.left=(pr.left-sr.left+r.x+r.w/2)+"px";
+  pill.style.top=(pr.top-sr.top+Math.max(34,r.y))+"px";
+  pill.classList.add("on");
+}
+pill.onclick=()=>{if(pill.dataset.copy){navigator.clipboard?.writeText(pill.dataset.copy);toast("Copied "+pill.dataset.copy)}};
+function toast(t){const e=document.getElementById("toast");e.textContent=t;e.classList.add("on");
+  clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove("on"),1400)}
+
+// ---- pointer handling
+let DRAG=null;
+for(const k of ["rgb","th"]){
+  const el=P[k].el, loc=e=>{const r=el.getBoundingClientRect();return [e.clientX-r.left,e.clientY-r.top]};
+  el.addEventListener("wheel",e=>{e.preventDefault();const [mx,my]=loc(e);
+    zoomAt(k,mx,my,Math.exp(-e.deltaY*(e.ctrlKey?.01:.0018)));placePill()},{passive:false});
+  el.addEventListener("pointerdown",e=>{
+    const [mx,my]=loc(e); el.setPointerCapture(e.pointerId);
+    const mark=MODE==="mark"||e.shiftKey, h=mark?null:hit(k,mx,my);
+    DRAG={k,mark,x0:mx,y0:my,x1:mx,y1:my,v:{...P[k].v},moved:false,h};
+    if(!mark) el.classList.add("drag");
+  });
+  el.addEventListener("pointermove",e=>{const [mx,my]=loc(e);
+    if(DRAG&&DRAG.k===k){DRAG.x1=mx;DRAG.y1=my;
+      if(Math.hypot(mx-DRAG.x0,my-DRAG.y0)>3) DRAG.moved=true;
+      if(DRAG.mark) draw(k);
+      else{P[k].v.tx=DRAG.v.tx+mx-DRAG.x0;P[k].v.ty=DRAG.v.ty+my-DRAG.y0;apply(k);placePill()}
+      return}
+    const h=hit(k,mx,my); if(h!==HOV){HOV=h;PILLK=k;drawAll()}
+  });
+  el.addEventListener("pointerleave",()=>{if(!DRAG&&HOV){HOV=null;drawAll()}});
+  el.addEventListener("pointerup",()=>{
+    const g=DRAG; DRAG=null; el.classList.remove("drag"); if(!g) return;
+    if(g.mark){
+      if(Math.abs(g.x1-g.x0)>4&&Math.abs(g.y1-g.y0)>4){
+        const v=P[k].v,c=[g.x0,g.y0,g.x1,g.y1].map((q,i)=>(q-(i%2?v.ty:v.tx))/v.s);
+        const b=fromPane(k,[Math.min(c[0],c[2]),Math.min(c[1],c[3]),Math.max(c[0],c[2]),Math.max(c[1],c[3])]);
+        USER.push({b,pane:k}); SEL="u"+(USER.length-1); PILLK=k;
+        focus(k==="rgb"?"th":"rgb",b);
+      }
+      drawAll(); return}
+    if(!g.moved){ // click: select a box and show it on the other image
+      SEL=g.h; PILLK=k; if(g.h){const o=allBoxes().find(x=>x.id===g.h);focus(k==="rgb"?"th":"rgb",o.b)}
+      drawAll()}
+  });
+}
+
+// ---- controls
+function setMode(m){MODE=m;tmove.classList.toggle("on",m==="move");tmark.classList.toggle("on",m==="mark");
+  stage.classList.toggle("mark",m==="mark")}
+tmove.onclick=()=>setMode("move"); tmark.onclick=()=>setMode("mark");
+tfit.onclick=()=>{fit("rgb");fit("th");apply("rgb");apply("th");placePill()};
+document.addEventListener("keydown",e=>{
+  if(e.target.tagName==="INPUT") return;
+  if(e.key==="ArrowRight") show(Math.min(DATA.length-1,CUR+1));
+  else if(e.key==="ArrowLeft") show(Math.max(0,CUR-1));
+  else if(e.key==="m"||e.key==="M") setMode("mark");
+  else if(e.key==="v"||e.key==="V") setMode("move");
+  else if(e.key==="f"||e.key==="F") tfit.onclick();
+  else if(e.key==="Escape"){SEL=null;drawAll()}
+  else if(e.key==="Backspace"||e.key==="Delete"){
+    const i=SEL&&SEL[0]==="u"?+SEL.slice(1):USER.length-1;
+    if(i>=0){USER.splice(i,1);SEL=null;HOV=null;drawAll()}
+    e.preventDefault()}
+});
+
+function show(i){
+  CUR=i; USER=[]; SEL=null; HOV=null; const r=DATA[i];
+  lrgb.textContent=r.rgb+(r.zoom>1.01?` · ${r.zoom.toFixed(2)}× zoom`:""); lth.textContent=r.th;
+  let n=2; const done=()=>{if(--n===0){fit("rgb");fit("th");apply("rgb");apply("th")}};
+  irgb.onload=done; ith.onload=done;
+  irgb.style.width=r.W+"px"; irgb.style.height=r.H+"px"; ith.style.width=TW+"px"; ith.style.height=TH+"px";
+  irgb.src=`tdemo/${r.n}_rgb.jpg`; ith.src=`tdemo/${r.n}_th.jpg`;
+  pill.classList.remove("on");
+  document.querySelectorAll(".strip button").forEach((b,j)=>b.classList.toggle("on",j===i));
+  document.querySelector(".strip button.on")?.scrollIntoView({block:"nearest",inline:"center",behavior:"smooth"});
+  history.replaceState(null,"","#"+r.n);
+  if(DATA[i+1]){new Image().src=`tdemo/${DATA[i+1].n}_rgb.jpg`}
+}
+strip.innerHTML=DATA.map((r,i)=>`<button title="${r.rgb}" onclick="show(${i})"><img loading="lazy" src="tdemo/${r.n}_s.jpg" alt="">${
+  r.hit?"<i></i>":""}</button>`).join("");
+addEventListener("resize",()=>tfit.onclick());
+const h=location.hash.slice(1), start=DATA.findIndex(r=>r.n===h);
+show(start>=0?start:Math.max(0,DATA.findIndex(r=>r.hit)));
+</script>
+</body></html>

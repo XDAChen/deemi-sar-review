@@ -18,8 +18,13 @@ body{background:var(--ground);color:var(--ink);font:15px/1.6 var(--ui);
      font-variant-numeric:tabular-nums}
 .wrap{max-width:1200px;margin:0 auto;padding:30px 22px 72px;display:flex;
       flex-direction:column;gap:18px}
-header{display:flex;flex-direction:column;gap:5px;border-bottom:1px solid var(--line);
-       padding-bottom:16px}
+header{display:flex;align-items:flex-end;justify-content:space-between;gap:12px 16px;
+       flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:16px}
+.htext{display:flex;flex-direction:column;gap:5px}
+.seg{display:inline-flex;background:var(--line2);border-radius:9px;padding:2px}
+.seg a{font-size:13px;padding:5px 13px;border-radius:7px;color:var(--ink2);text-decoration:none;
+       white-space:nowrap}
+.seg a.on{background:var(--panel);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
 .eyebrow{font:600 11px/1 var(--mono);letter-spacing:.16em;text-transform:uppercase;
          color:var(--accent)}
 h1{font-size:26px;line-height:1.15;letter-spacing:-.022em;font-weight:680;text-wrap:balance}
@@ -197,9 +202,14 @@ form.q input:focus-visible{border-color:var(--accent);
 </style>
 <div class="wrap">
   <header>
-    <span class="eyebrow">Visual Prioritization</span>
-    <h1>DEEMI SAR Review</h1>
-    <p class="byline">by Draken</p>
+    <div class="htext">
+      <span class="eyebrow">Visual Prioritization</span>
+      <h1>DEEMI SAR Review</h1>
+      <p class="byline">by Draken</p>
+    </div>
+    <nav class="seg" aria-label="view">
+      <a class="on" href="demo.html" aria-current="page">RGB</a><a href="thermal.html">RGB + Thermal</a>
+    </nav>
   </header>
 
 
